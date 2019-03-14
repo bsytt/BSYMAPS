@@ -1,0 +1,24 @@
+PODS:
+  - AMap2DMap (5.6.1):
+    - AMapFoundation (~> 1.4)
+  - AMapFoundation (1.5.5)
+  - BaiduMapKit (4.2.0)
+
+DEPENDENCIES:
+  - AMap2DMap
+  - BaiduMapKit
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AMap2DMap
+    - AMapFoundation
+    - BaiduMapKit
+
+SPEC CHECKSUMS:
+  AMap2DMap: cac76bc057de18a1641f34df6b50bf5bc6b23571
+  AMapFoundation: 652bd70ba579f48a98bdf0c74d6e62a89a06ca58
+  BaiduMapKit: b6a8f31b3d2e4e5cad4084512a0d9a3878638272
+
+PODFILE CHECKSUM: 37fd606ad30a2eef1bfa0f25b3a23f1a77b32756
+
+COCOAPODS: 1.5.3
