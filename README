@@ -1,1 +1,61 @@
 面向代理编程。配合工厂模式轻松继承地图SDK，修改Config.map.xml中的isOpen即可切换高德或百度
+
+1.不管是百度地图(BMKMapView)还是高德地图(MAMapView)，都继承自UIView。那么就可以创建一个地图统一的协议IMapView，其中：
+//初始化地图规范
+- (instancetype)initWithFrame:(CGRect)frame;
+//获得地图view
+- (UIView *)getView;
+
+2.然后就可以创建用来实例化地图view的工具类BaiduMapView和GaodeMapView，它们遵从IMapView协议，实现协议中的方法。
+3.紧接着要思考：我们希望外部不用关心究竟是使用哪种地图，因此，想到了工厂模式：
+  首先创建一个工厂协议BSYMapFactory，其中：
+  - (id<IMapView>)getMapView:(CGRect)frame;
+  遵从此协议的各个工厂来实例化地图，那么就创建了BaiduMapFactory和GaodeMapFactory两个工厂
+  如：
+    - (id<IMapView>)getMapView:(CGRect)frame{	         //实现协议方法
+    	return [[GaodeMapView alloc]initWithFrame:frame];//创建高德
+    }
+  另外可以将地图sdk的初始化绑定appkey放在各自的工厂里
+   - (void)initMap:(NSString *)appKey {
+    // 要使用百度地图，请先启动BaiduMapManager
+    BMKMapManager *mapManager = [[BMKMapManager alloc] init];
+    // 如果要关注网络及授权验证事件，请设定generalDelegate参数
+    BOOL ret = [mapManager start:appKey  generalDelegate:nil];
+    if (!ret) {
+        NSLog(@"manager start failed!");
+    }
+   }
+4.下面还是要要思考怎样去管理地图的创建，因为一个个手动创建工厂还是很麻烦，那么我们可以定义一个地图的引擎MapEngine，定义一个获取地图工厂的协议规范：
+   - (id<BSYMapFactory>)getMapFatory;
+5.创建一个xml文件：
+  <?xml version="1.0" encoding="UTF-8" ?>
+  <!--地图元素-->
+  <map>
+    <!--配置平台-->
+    <platform mapId="1" appKey="your baidu appkey" factoryName="BaiduMapFactory" isOpen="YES"/>
+    <platform mapId="2" appKey="your gaode appkey" factoryName="GaodeMapFactory" isOpen="NO"/>
+  </map>
+6.根据isOpen可以知道使用哪个工厂：
+ 因为可能有多种地图，因此要动态的获取类，使用NSClassFromString就可以不用管具体的类，只要里面有shareMapFactory，就可以创建该类。
+ - (id<BSYMapFactory>)getMapFatory {
+    id factory;
+    PlatformXMLParser *pser = [[PlatformXMLParser alloc]init];
+    NSMutableArray *dataArr = [pser parser];
+    NSString *key = nil;
+    for (Platform *pf in dataArr) {
+        if ([pf.isOpen isEqualToString:@"YES"]) {
+            factory = NSClassFromString(pf.factoryName);
+            key = pf.appKey;
+        }
+    }
+    //返回具体的地图
+    id manager = [factory performSelector:@selector(shareMapFactory) withObject:nil];
+    [manager performSelector:@selector(initMap:) withObject:key];
+    return manager;
+ }
+7.以下代码就可以创建一个地图工厂去生产地图。
+    MapEngine *mapEngin = [MapEngine shareMapEngine];
+    id<BSYMapFactory> factory = [mapEngin getMapFatory];
+    id<IMapView> mapView = [factory getMapView:self.view.frame];
+    [self.view addSubview:[mapView getView]];
+
