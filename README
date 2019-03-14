@@ -27,7 +27,7 @@
    }
 4.下面还是要要思考怎样去管理地图的创建，因为一个个手动创建工厂还是很麻烦，那么我们可以定义一个地图的引擎MapEngine，定义一个获取地图工厂的协议规范：
    - (id<BSYMapFactory>)getMapFatory;
-5.创建一个xml文件：
+5.创建一个xml文件：(这里可以选择pList文件，看自己喜好)
   <?xml version="1.0" encoding="UTF-8" ?>
   <!--地图元素-->
   <map>
